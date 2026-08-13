@@ -134,3 +134,76 @@ def clean_canonical_data(df):
     df = df.reset_index(drop=True)
 
     return df
+
+
+
+def convert_halueval(df):
+    """
+    Convert HaluEval QA data into the canonical schema.
+
+    label:
+        0 = right answer
+        1 = hallucinated answer
+    """
+
+    records = []
+
+    for index, row in df.reset_index(drop=True).iterrows():
+
+        question_id = f"HE_{index:05d}"
+
+        # Right answer
+        records.append({
+            "question_id": question_id,
+            "candidate_id": f"{question_id}_R_000",
+            "source_dataset": "halueval",
+            "question": row["question"],
+            "answer": row["right_answer"],
+            "context": row["knowledge"],
+            "label": 0,
+            "question_category": "QA"
+        })
+
+        # Hallucinated answer
+        records.append({
+            "question_id": question_id,
+            "candidate_id": f"{question_id}_H_000",
+            "source_dataset": "halueval",
+            "question": row["question"],
+            "answer": row["hallucinated_answer"],
+            "context": row["knowledge"],
+            "label": 1,
+            "question_category": "QA"
+        })
+
+    return pd.DataFrame(records)
+
+
+def convert_fever(df):
+    """
+    Convert binary FEVER data into the canonical schema.
+
+    SUPPORTS -> label 0
+    REFUTES  -> label 1
+
+    NOT ENOUGH INFO should already have been removed.
+    """
+
+    records = []
+
+    for _, row in df.reset_index(drop=True).iterrows():
+
+        question_id = f"FEVER_{int(row['id'])}"
+
+        records.append({
+            "question_id": question_id,
+            "candidate_id": f"{question_id}_C_000",
+            "source_dataset": "fever",
+            "question": row["claim"],
+            "answer": row["claim"],
+            "context": "",
+            "label": int(row["binary_label"]),
+            "question_category": "claim_verification"
+        })
+
+    return pd.DataFrame(records)
