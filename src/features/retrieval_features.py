@@ -7,9 +7,17 @@ def add_retrieval_features(
     df: pd.DataFrame,
     index,
     embedding_model,
-    corpus_size: int,
-    top_k: int = 3
+    top_k: int = 3,
+    batch_size: int = 64
 ) -> pd.DataFrame:
+    """
+    Add retrieval-based features using a FAISS index.
+
+    Features:
+        retrieval_top1_similarity
+        retrieval_top3_mean_similarity
+        retrieval_coverage
+    """
 
     df = df.copy()
 
@@ -22,7 +30,7 @@ def add_retrieval_features(
 
     query_embeddings = embedding_model.encode(
         questions,
-        batch_size=64,
+        batch_size=batch_size,
         show_progress_bar=True,
         convert_to_numpy=True
     )
@@ -41,24 +49,31 @@ def add_retrieval_features(
     for row_scores in scores:
 
         top1 = float(row_scores[0])
-        mean_topk = float(np.mean(row_scores))
+        topk_mean = float(np.mean(row_scores))
 
         top1_similarity.append(top1)
-        topk_mean_similarity.append(mean_topk)
+        topk_mean_similarity.append(topk_mean)
 
-        # Simple first-version coverage signal.
-        # Higher retrieval similarity means stronger
-        # semantic coverage of the query by the corpus.
+        # First prototype definition:
+        # proportion of retrieved documents with
+        # positive semantic similarity.
+        threshold = 0.80 * row_scores[0]
         coverage = float(
-            np.mean(row_scores > 0.5)
+            np.mean(row_scores >= threshold)
         )
 
         retrieval_coverage.append(coverage)
 
-    df["retrieval_top1_similarity"] = top1_similarity
+    df["retrieval_top1_similarity"] = (
+        top1_similarity
+    )
+
     df["retrieval_top3_mean_similarity"] = (
         topk_mean_similarity
     )
-    df["retrieval_coverage"] = retrieval_coverage
+
+    df["retrieval_coverage"] = (
+        retrieval_coverage
+    )
 
     return df
