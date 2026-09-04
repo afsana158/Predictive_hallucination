@@ -1,0 +1,3 @@
+train_dataset,test_dataset,AUROC,AUPRC
+halueval,truthfulqa,0.525130106836627,0.5797360971802221
+halueval,fever,0.5458200576543771,0.5108144916397975
