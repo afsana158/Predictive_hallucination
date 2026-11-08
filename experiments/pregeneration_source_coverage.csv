@@ -1,0 +1,4 @@
+source_dataset,rows,unique_questions,usable_questions,usable_contexts,question_and_context_available
+fever,9160,9160,9160,0,0
+halueval,14000,7000,14000,14000,14000
+truthfulqa,4166,571,4166,0,0

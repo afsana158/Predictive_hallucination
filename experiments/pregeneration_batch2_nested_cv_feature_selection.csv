@@ -1,0 +1,26 @@
+repeat,outer_fold,selected_feature_group,selected_feature_count,selected_C,inner_average_precision,outer_test_size,outer_test_failures
+1,1,Ratio + content token count,2,0.1,0.30831967952588,50,5
+1,2,Ratio + content token count,2,1.0,0.27736733736661884,50,5
+1,3,Ratio + content token count,2,0.1,0.29092653416032677,50,5
+1,4,All four overlap features,4,1.0,0.2608757404549975,50,5
+1,5,All four overlap features,4,1.0,0.3146779760393896,49,5
+2,1,All four overlap features,4,1.0,0.3852311311289492,50,5
+2,2,All four overlap features,4,0.1,0.25965065373189344,50,5
+2,3,All four overlap features,4,0.1,0.3608110573103896,50,5
+2,4,Ratio + content token count,2,0.1,0.30672985389191226,50,5
+2,5,All four overlap features,4,10.0,0.29031410224884097,49,5
+3,1,All four overlap features,4,0.1,0.30273514181130645,50,5
+3,2,Ratio + content token count,2,0.1,0.28566225371237103,50,5
+3,3,Overlap ratio only,1,0.1,0.28650811787600533,50,5
+3,4,All four overlap features,4,10.0,0.2809942954236014,50,5
+3,5,All four overlap features,4,0.1,0.27537528941027617,49,5
+4,1,All 27 features,27,10.0,0.3021574924335422,50,5
+4,2,All four overlap features,4,10.0,0.35458120930275894,50,5
+4,3,All four overlap features,4,10.0,0.2684609414749497,50,5
+4,4,All four overlap features,4,10.0,0.3022226168047936,50,5
+4,5,All four overlap features,4,10.0,0.2920646876612633,49,5
+5,1,All four overlap features,4,10.0,0.3248792612551786,50,5
+5,2,All four overlap features,4,0.1,0.28795095241301344,50,5
+5,3,All four overlap features,4,10.0,0.29667940644084156,50,5
+5,4,All four overlap features,4,10.0,0.34896585438531574,50,5
+5,5,Overlap ratio only,1,0.1,0.28894661270253336,49,5
