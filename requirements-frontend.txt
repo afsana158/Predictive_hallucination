@@ -1,0 +1,4 @@
+-r requirements.txt
+
+# Streamlit frontend
+streamlit==1.67.0
