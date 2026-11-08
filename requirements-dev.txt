@@ -1,2 +1,4 @@
--r requirements.txt
+-r requirements-frontend.txt
+
+# Development and testing
 pytest==9.2.0

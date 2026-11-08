@@ -1,114 +1,279 @@
+
 # Predictive Hallucination / LLM Risk Estimator
 
-An experimental machine-learning system that estimates the risk of answer failure
-before an LLM generates an answer, using only the input question and available context.
+An experimental machine-learning application combining pre-generation answer-failure risk estimation with context-grounded LLM answer generation.
 
-## 1. Project overview
+The application uses a Logistic Regression model to estimate risk and Qwen3 through Ollama to generate answers when the decision policy permits.
 
-The system extracts 27 pre-generation features from a question and its context
-and passes them to a trained Logistic Regression model.
+**Research disclaimer:** This is an experimental answer-failure estimator, not a production-validated hallucination detector.
 
-It returns an estimated answer-failure probability, risk category, and recommended action.
+## 1. Project Overview
 
-The current system estimates answer-failure risk. It should not be interpreted
-as a fully validated hallucination detector.
+The application accepts a question and supporting context.
 
-## 2. Technology stack
+It extracts 27 pre-generation features and passes them to a trained Logistic Regression model.
 
+Based on the estimated risk, the application can generate an answer, request additional evidence, or abstain.
+
+Medium-risk users can optionally override the recommendation and generate an answer with an explicit warning.
+
+## 2. Technology Stack
+
+**Machine Learning**
 - Python 3.11+
 - Pandas
 - NumPy
 - Scikit-learn
 - Joblib
+
+**Answer Generation**
+- Ollama
+- Qwen3 4B Instruct
+
+**Frontend**
+- Streamlit
+- Python
+- Custom CSS
+
+**Testing**
 - Pytest
+- Streamlit AppTest
 
-## 3. Project structure
+## 3. Project Structure
 
-```text
-Predictive_hallucination/
-├── models/
-│   └── pregeneration_risk_model.joblib
-├── src/
-│   ├── features/
-│   │   ├── basic_features.py
-│   │   └── pregeneration_features.py
-│   ├── decision_policy.py
-│   └── predictor.py
-├── tests/
-│   ├── test_features.py
-│   ├── test_predictor.py
-│   └── test_decision_policy.py
-├── requirements.txt
-├── requirements-dev.txt
-└── README.md
+    Predictive_hallucination/
+    ├── data/
+    ├── experiments/
+    ├── frontend/
+    │   └── app.py
+    ├── models/
+    │   └── pregeneration_risk_model.joblib
+    ├── notebooks/
+    ├── src/
+    │   ├── predictor.py
+    │   ├── decision_policy.py
+    │   ├── features/
+    │   │   ├── basic_features.py
+    │   │   ├── pregeneration_features.py
+    │   │   └── advanced_pregen_features.py
+    │   └── generation/
+    │       ├── __init__.py
+    │       ├── ollama_generator.py
+    │       └── answer_pipeline.py
+    ├── tests/
+    │   ├── test_predictor.py
+    │   ├── test_features.py
+    │   ├── test_decision_policy.py
+    │   ├── test_answer_pipeline.py
+    │   └── test_streamlit_app.py
+    ├── requirements.txt
+    ├── requirements-frontend.txt
+    ├── requirements-dev.txt
+    └── README.md
 
-git clone https://github.com/afsana158/Predictive_hallucination.git
-cd Predictive_hallucination
-python3.11 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m pip install -r requirements-dev.txt
-from src.predictor import predict_answer_failure_risk
+## 4. Installation
 
-question = "What is the capital of France?"
-context = "France is a country in Europe. Its capital city is Paris."
+### Prerequisites
 
-result = predict_answer_failure_risk(question, context)
+- Python 3.11 or newer
+- Git
+- Ollama
 
-print(result)
-)
-The predictor returns:
+Clone the repository:
 
-- risk_probability
-- risk_percentage
-- predicted_class
-- prediction
-- risk_level
-- recommended_action
-- recommendation_message
-- model_status
-- model_name
+    git clone https://github.com/afsana158/Predictive_hallucination.git
 
-Both question and context must be non-empty strings.
+    cd Predictive_hallucination
 
-## 6. Risk decision policy
+Create a virtual environment:
 
-| Risk probability | Risk level | Recommended action |
+    python3.11 -m venv .venv
+
+Activate it on macOS:
+
+    source .venv/bin/activate
+
+Install complete application dependencies:
+
+    python -m pip install -r requirements-frontend.txt
+
+Install development and testing dependencies:
+
+    python -m pip install -r requirements-dev.txt
+
+Verify:
+
+    python -m pip check
+
+## 5. Ollama and Qwen3 Setup
+
+Download Ollama from:
+
+https://ollama.com/download
+
+Download the model:
+
+    ollama pull qwen3:4b-instruct
+
+Check installed models:
+
+    ollama list
+
+Start the Ollama application on macOS:
+
+    open -a Ollama
+
+Check the local Ollama API:
+
+    curl http://localhost:11434/api/tags
+
+The application uses:
+
+- Ollama host: http://localhost:11434
+- Model: qwen3:4b-instruct
+
+Ollama must be running before answer generation is requested.
+
+## 6. Running the Application
+
+From the project root:
+
+    python -m streamlit run frontend/app.py
+
+Open the local Streamlit address, usually:
+
+    http://localhost:8501
+
+## 7. Application Workflow
+
+1. Enter a question.
+2. Provide supporting context.
+3. The Logistic Regression model estimates answer-failure risk.
+4. The decision policy selects the recommended action.
+5. Qwen3 generates an answer when generation is permitted.
+
+### Risk Decision Policy
+
+| Probability | Risk | Recommended action |
 |---|---|---|
 | Below 0.20 | Low | ANSWER |
 | 0.20 to below 0.50 | Medium | RETRIEVE_MORE_EVIDENCE |
 | 0.50 to 1.00 | High | CLARIFY_OR_ABSTAIN |
 
-These thresholds are provisional and require further validation.
+These thresholds are provisional.
 
-## 7. Running automated tests
+### Low Risk
 
-Run:
+The application generates an answer using Qwen3 and the supplied context.
 
-```bash
-python -m pytest tests/ -v
-```
+### Medium Risk
 
-## 8. Model information and limitations
+The application recommends additional supporting evidence.
+
+Users can provide additional evidence and reassess.
+
+Alternatively, users can select:
+
+**Generate Anyway — I Understand the Risk**
+
+The override permits Qwen3 answer generation while preserving the original risk score, risk category and recommended action.
+
+The generated answer displays an override warning.
+
+### High Risk
+
+The application abstains from generating an answer and recommends clarification or stronger supporting evidence.
+
+## 8. Backend Components
+
+**src/predictor.py**
+
+Loads the saved model, extracts the expected features and predicts answer-failure risk.
+
+Main function:
+
+    predict_answer_failure_risk(question, context)
+
+**src/features/pregeneration_features.py**
+
+Extracts the 27 pre-generation features from the question and context.
+
+**src/decision_policy.py**
+
+Maps the predicted probability to a risk category and recommended action.
+
+**src/generation/ollama_generator.py**
+
+Connects to Ollama and generates context-grounded answers.
+
+**src/generation/answer_pipeline.py**
+
+Combines risk estimation with conditional answer generation.
+
+**frontend/app.py**
+
+Contains the Streamlit user interface, input validation, risk display, additional-evidence workflow and Medium-risk override.
+
+## 9. Running Automated Tests
+
+Run the complete test suite:
+
+    python -m pytest tests/ -v
+
+Check dependencies:
+
+    python -m pip check
+
+The current development checkpoint contains 32 automated tests covering:
+
+- Feature extraction and model compatibility.
+- Prediction output and invalid inputs.
+- Decision-policy thresholds.
+- Low, Medium and High risk paths.
+- Answer-generation integration.
+- Streamlit Medium-risk override.
+
+The UI override test uses a mocked generator and does not require a live Ollama request.
+
+## 10. Model Information
 
 The saved model is a Logistic Regression pipeline.
 
-- Target: answer_failure_label
-- Training rows: 298
-- Failure cases: 30
-- Features: 27
-- Status: experimental_pilot_model
+| Property | Value |
+|---|---|
+| Target | answer_failure_label |
+| Training observations | 298 |
+| Failure cases | 30 |
+| Input features | 27 |
+| Model status | experimental_pilot_model |
 
-The dataset is relatively small. Predictions should be treated as experimental risk estimates, not guarantees of factual correctness.
+The model estimates answer-failure risk, not hallucination probability specifically.
 
-The model has not been established as a calibrated or production-validated hallucination detector.
+Its training and evaluation dataset is relatively small. The estimated probabilities are not established as calibrated or production-validated.
 
-## 9. Current development status
+## 11. Limitations
 
-- Baseline prediction backend: implemented
-- Saved model integration: tested
-- Feature compatibility: tested
-- Decision policy: implemented
-- Automated tests: 28 passed
-- Streamlit frontend: pending
-- Live demonstration: pending
+- The model is experimental and requires further validation.
+- Answer-failure labels include errors beyond factual hallucinations.
+- The risk thresholds are provisional.
+- Qwen3 may still generate unsupported or incorrect answers.
+- Answer quality depends on the supplied context.
+- Automatic evidence retrieval is not yet implemented.
+- The application currently requires a locally running Ollama instance.
+
+## 12. Development Status
+
+- Logistic Regression baseline: implemented.
+- 27-feature extraction: implemented.
+- Risk decision policy: implemented.
+- Qwen3 answer generation: integrated.
+- Combined risk and generation pipeline: implemented.
+- Streamlit frontend: implemented.
+- Additional-evidence workflow: implemented.
+- Medium-risk override: implemented.
+- Automated tests: 32 passed in the current development checkpoint.
+- Live deployment: pending.
+
+## Repository
+
+https://github.com/afsana158/Predictive_hallucination
